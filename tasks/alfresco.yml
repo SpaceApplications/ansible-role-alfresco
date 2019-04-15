@@ -106,8 +106,14 @@
   shell: /sbin/service alfresco stop
 
 - name: Apply amps Shared Alfresco
-  shell: '/bin/sh {{ alfresco_user_home }}/bin/apply_amps.sh -force'
+  shell: '/bin/bash {{ alfresco_user_home }}/bin/apply_amps.sh -force'
   when: setup_shared_alfresco
+
+- name: Disable CSRF token filter
+  lineinfile:
+    dest: '{{ alfresco_user_home }}/tomcat/shared/classes/alfresco/web-extension/share-config-custom.xml'
+    line: '   <config evaluator="string-compare" condition="CSRFPolicy" replace="true"><filter/></config>'
+    insertafter: '   <!-- Disable the CSRF Token Filter -->'
   
 - name: start alfresco server
   shell: /sbin/service alfresco start
