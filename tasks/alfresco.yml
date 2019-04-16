@@ -46,6 +46,14 @@
   copy: src=start_oo.sh dest={{ alfresco_user_home }}/bin/start_oo.sh owner={{ alfresco_user }} group={{ alfresco_group }} mode=0755
   when: alfresco_extracted is changed
 
+- name: Install alfresco admin password update script
+  template: src=change_admin_password.sh.j2 dest={{ alfresco_user_home }}/bin/change_admin_password.sh owner={{ alfresco_user }} group={{ alfresco_group }} mode=0755
+  when: alfresco_extracted is changed
+  
+- name: Install password encode script
+  copy: src=encode_password.py dest={{ alfresco_user_home }}/bin/encode_password.py owner={{ alfresco_user }} group={{ alfresco_group }} mode=0755
+  when: alfresco_extracted is changed
+  
 - name: Install alfresco startup script
   template: src=alfresco.sh.j2 dest={{ alfresco_user_home }}/bin/alfresco.sh owner={{ alfresco_user }} group={{ alfresco_group }} mode=0755 backup=yes
   when: alfresco_extracted is changed
@@ -58,6 +66,14 @@
   template: src=alfresco-global.properties.j2 dest={{ alfresco_user_home }}/tomcat/shared/classes/alfresco-global.properties owner={{ alfresco_user }} group={{ alfresco_group }} mode=0644 backup=yes
   when: alfresco_extracted is changed
 
+# NOTE: if the alfresco DB has been already initialized, the new password hash has to be manually
+# set also there. (see https://docs.alfresco.com/5.0/concepts/admin-password.html)
+- name: Change alfresco admin password
+  shell: '/bin/bash {{ alfresco_user_home }}/bin/change_admin_password.sh'
+  environment:
+    ALFRESCO_PASSWORD: '{{ app_alfresco_password }}'
+  when: app_alfresco_password is defined
+  
 - name: Install alfresco logging configuration
   template: src=custom-log4j.properties.j2 dest={{ alfresco_user_home }}/tomcat/shared/classes/alfresco/extension/custom-log4j.properties owner={{ alfresco_user }} group={{ alfresco_group }} mode=0644
   when: alfresco_extracted is changed
